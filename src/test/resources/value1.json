@@ -1,0 +1,92 @@
+{
+    "schema": {
+        "type": "struct",
+        "fields": [{
+                "type": "struct",
+                "fields": [{
+                        "type": "int64",
+                        "optional": false,
+                        "field": "observationid"
+                    }, {
+                        "type": "double",
+                        "optional": true,
+                        "field": "value"
+                    }],
+                "optional": true,
+                "name": "sos.public.numericvalue.Value",
+                "field": "before"
+            }, {
+                "type": "struct",
+                "fields": [{
+                        "type": "int64",
+                        "optional": false,
+                        "field": "observationid"
+                    }, {
+                        "type": "double",
+                        "optional": true,
+                        "field": "value"
+                    }],
+                "optional": true,
+                "name": "sos.public.numericvalue.Value",
+                "field": "after"
+            }, {
+                "type": "struct",
+                "fields": [{
+                        "type": "string",
+                        "optional": false,
+                        "field": "name"
+                    }, {
+                        "type": "int64",
+                        "optional": true,
+                        "field": "ts_usec"
+                    }, {
+                        "type": "int32",
+                        "optional": true,
+                        "field": "txId"
+                    }, {
+                        "type": "int64",
+                        "optional": true,
+                        "field": "lsn"
+                    }, {
+                        "type": "boolean",
+                        "optional": true,
+                        "field": "snapshot"
+                    }, {
+                        "type": "boolean",
+                        "optional": true,
+                        "field": "last_snapshot_record"
+                    }],
+                "optional": false,
+                "name": "io.debezium.connector.postgresql.Source",
+                "field": "source"
+            }, {
+                "type": "string",
+                "optional": false,
+                "field": "op"
+            }, {
+                "type": "int64",
+                "optional": true,
+                "field": "ts_ms"
+            }],
+        "optional": false,
+        "name": "sos.public.numericvalue.Envelope",
+        "version": 1
+    },
+    "payload": {
+        "before": null,
+        "after": {
+            "observationid": 1,
+            "value": 1.0
+        },
+        "source": {
+            "name": "sos",
+            "ts_usec": 1501066179141470,
+            "txId": 970,
+            "lsn": 54667925,
+            "snapshot": null,
+            "last_snapshot_record": null
+        },
+        "op": "c",
+        "ts_ms": 1501066179150
+    }
+}

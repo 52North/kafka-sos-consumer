@@ -1,0 +1,185 @@
+{
+    "service": "SOS",
+    "version": "2.0.0",
+    "request": "Batch",
+    "stopAtFailure": true,
+    "requests": [
+        {
+            "request": "InsertSensor",
+            "service": "SOS",
+            "version": "2.0.0",
+            "procedureDescriptionFormat": "http://www.opengis.net/sensorML/1.0.1",
+            "procedureDescription": "<sml:SensorML xmlns:swes=\"http://www.opengis.net/swes/2.0\" xmlns:sos=\"http://www.opengis.net/sos/2.0\" xmlns:swe=\"http://www.opengis.net/swe/1.0.1\" xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.0.1\"><sml:member><sml:System><sml:identification><sml:IdentifierList><sml:identifier name=\"uniqueID\"><sml:Term definition=\"urn:ogc:def:identifier:OGC:1.0:uniqueID\"><sml:value>http://www.52north.org/test/procedure/1</sml:value></sml:Term></sml:identifier><sml:identifier name=\"longName\"><sml:Term definition=\"urn:ogc:def:identifier:OGC:1.0:longName\"><sml:value>con terra GmbH (www.conterra.de)</sml:value></sml:Term></sml:identifier><sml:identifier name=\"shortName\"><sml:Term definition=\"urn:ogc:def:identifier:OGC:1.0:shortName\"><sml:value>con terra</sml:value></sml:Term></sml:identifier></sml:IdentifierList></sml:identification><sml:capabilities name=\"offerings\"><swe:SimpleDataRecord><swe:field name=\"Offering for sensor 1\"><swe:Text definition=\"urn:ogc:def:identifier:OGC:offeringID\"><swe:value>http://www.52north.org/test/offering/1</swe:value></swe:Text></swe:field></swe:SimpleDataRecord></sml:capabilities><sml:capabilities name=\"featuresOfInterest\"><swe:SimpleDataRecord><swe:field name=\"featureOfInterestID\"><swe:Text><swe:value>http://www.52north.org/test/featureOfInterest/1</swe:value></swe:Text></swe:field></swe:SimpleDataRecord></sml:capabilities><sml:position name=\"sensorPosition\"><swe:Position referenceFrame=\"urn:ogc:def:crs:EPSG::4326\"><swe:location><swe:Vector gml:id=\"STATION_LOCATION\"><swe:coordinate name=\"easting\"><swe:Quantity axisID=\"x\"><swe:uom code=\"degree\"/><swe:value>7.727958</swe:value></swe:Quantity></swe:coordinate><swe:coordinate name=\"northing\"><swe:Quantity axisID=\"y\"><swe:uom code=\"degree\" /><swe:value>51.883906</swe:value></swe:Quantity></swe:coordinate><swe:coordinate name=\"altitude\"><swe:Quantity axisID=\"z\"><swe:uom code=\"m\"/><swe:value>52.0</swe:value></swe:Quantity></swe:coordinate></swe:Vector></swe:location></swe:Position></sml:position><sml:inputs><sml:InputList><sml:input name=\"test_observable_property_1\"><swe:ObservableProperty definition=\"http://www.52north.org/test/observableProperty/1\"/></sml:input></sml:InputList></sml:inputs><sml:outputs><sml:OutputList><sml:output name=\"test_observable_property_1\"><swe:Category definition=\"http://www.52north.org/test/observableProperty/1\"><swe:codeSpace xlink:href=\"test_unit_1\"/></swe:Category></sml:output></sml:OutputList></sml:outputs></sml:System></sml:member></sml:SensorML>",
+            "observableProperty": [
+                "http://www.52north.org/test/observableProperty/1"
+            ],
+            "observationType": [
+                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"
+            ],
+            "featureOfInterestType": "http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingPoint"
+        },
+        {
+            "request": "InsertObservation",
+            "service": "SOS",
+            "version": "2.0.0",
+            "offering": "http://www.52north.org/test/offering/1",
+            "observation": [
+                {
+                    "identifier": {
+                        "value": "http://www.52north.org/test/observation/1",
+                        "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+                    },
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": {
+                        "identifier": {
+                            "value": "http://www.52north.org/test/featureOfInterest/1",
+                            "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+                        },
+                        "name": [
+                            {
+                                "value": "con terra",
+                                "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+                            }
+                        ],
+                        "sampledFeature": [
+                            "http://www.52north.org/test/featureOfInterest/world"
+                        ],
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                51.883906,
+                                7.727958
+                            ],
+                            "crs": {
+                                "type": "name",
+                                "properties": {
+                                    "name": "EPSG:4326"
+                                }
+                            }
+                        }
+                    },
+                    "phenomenonTime": "2012-11-19T13:00:00+00:00",
+                    "resultTime": "2012-11-19T13:00:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1
+                    }
+                },
+                {
+                    "identifier": {
+                        "value": "http://www.52north.org/test/observation/2",
+                        "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+                    },
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:01:00+00:00",
+                    "resultTime": "2012-11-19T13:01:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.1
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:02:00+00:00",
+                    "resultTime": "2012-11-19T13:02:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.2
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:03:00+00:00",
+                    "resultTime": "2012-11-19T13:03:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.3
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:04:00+00:00",
+                    "resultTime": "2012-11-19T13:04:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.4
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:05:00+00:00",
+                    "resultTime": "2012-11-19T13:05:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.5
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:06:00+00:00",
+                    "resultTime": "2012-11-19T13:06:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.6
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:07:00+00:00",
+                    "resultTime": "2012-11-19T13:07:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.7
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:08:00+00:00",
+                    "resultTime": "2012-11-19T13:08:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.8
+                    }
+                },
+                {
+                    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "procedure": "http://www.52north.org/test/procedure/1",
+                    "observedProperty": "http://www.52north.org/test/observableProperty/1",
+                    "featureOfInterest": "http://www.52north.org/test/featureOfInterest/1",
+                    "phenomenonTime": "2012-11-19T13:09:00+00:00",
+                    "resultTime": "2012-11-19T13:09:00+00:00",
+                    "result": {
+                        "uom": "test_unit_1",
+                        "value": 1.9
+                    }
+                }
+            ]
+        }
+    ]
+}
