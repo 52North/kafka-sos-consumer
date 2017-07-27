@@ -23,14 +23,15 @@ import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -72,7 +73,7 @@ public class SosOfferingProducer {
         props.put("value.serializer", StringSerializer.class.getName());
         
         this.producer = new KafkaProducer<>(props);
-        this.topicName = UUID.randomUUID().toString();
+        this.topicName = "sos.offerings."+this.offering.getId();
         this.valueCounter = 0;
         
         Properties adminConfig = new Properties();
@@ -103,11 +104,11 @@ public class SosOfferingProducer {
             throw e;
         }
         
-        LOG.info("initialized producer for offering '{}'", getOfferingIdentifier());
+        LOG.info("initialized producer for offering '{}'", getOfferingId());
     }
     
-    public String getOfferingIdentifier() {
-        return this.offering.getIdentifier();
+    public String getOfferingId() {
+        return Integer.toString(this.offering.getId());
     }
     
     public String getTopicName() {
@@ -115,10 +116,19 @@ public class SosOfferingProducer {
     }
     
     void newMeasurement(MeasurementObservation mo) throws JsonProcessingException {
-        LOG.info("New measurement for producer {}", this);
-        this.producer.send(new ProducerRecord<>(this.topicName,
+        LOG.debug("New measurement for producer {}", this);
+        Future<RecordMetadata> response = this.producer.send(new ProducerRecord<>(this.topicName,
                 this.valueCounter++,
                 MAPPER.writeValueAsString(mo)));
+        
+        try {
+            RecordMetadata meta = response.get();
+            LOG.debug("Topic response: {}", meta.toString());
+        }
+        catch (InterruptedException | ExecutionException e) {
+            LOG.warn("Could not send to topic: {}", e.getMessage());
+            LOG.debug(e.getMessage(), e);
+        }
     }
     
 }

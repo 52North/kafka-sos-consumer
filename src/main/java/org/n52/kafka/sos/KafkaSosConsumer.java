@@ -169,7 +169,7 @@ public class KafkaSosConsumer implements Runnable {
                                 JsonNode source = payload.path("source");
                                 if (!source.isMissingNode()) {
                                     JsonNode snapshot = source.path("snapshot");
-                                    if (!snapshot.asBoolean()) {
+                                    if (snapshot.asBoolean()) {
                                         LOG.debug("got a snapshot value, ignoring");
                                     }
                                     else {
@@ -305,10 +305,17 @@ public class KafkaSosConsumer implements Runnable {
         
     }
     
-    public List<String> getProducerTopics() {
+    public List<String> getOfferingIdentifiers() {
         return this.producers.values().stream()
-                .map(p -> p.getOfferingIdentifier())
+                .map(p -> p.getOfferingId())
                 .collect(Collectors.toList());
+    }
+    
+    public String resolveTopicForOfferingId(String id) {
+        return this.producers.values().stream()
+                .filter(p -> id.equals(p.getOfferingId()))
+                .map(sop -> sop.getTopicName())
+                .findFirst().orElse(null);
     }
 
     @Override
