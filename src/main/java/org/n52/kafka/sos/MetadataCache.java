@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
 import org.n52.kafka.sos.model.Feature;
+import org.n52.kafka.sos.model.MeasurementObservation;
 import org.n52.kafka.sos.model.ObservableProperty;
 import org.n52.kafka.sos.model.Observation;
 import org.n52.kafka.sos.model.Offering;
@@ -113,6 +114,11 @@ public class MetadataCache {
 
     public Map<Integer, Feature> getFeatures() {
         return features;
+    }
+
+    public Offering resolveOffering(MeasurementObservation mo) {
+        int id = mo.getSeries().getOfferingId();
+        return offerings.get(id);
     }
 
 }

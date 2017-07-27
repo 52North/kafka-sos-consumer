@@ -16,6 +16,7 @@
  */
 package org.n52.kafka.sos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -38,6 +37,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.n52.kafka.sos.model.MeasurementObservation;
+import org.n52.kafka.sos.model.Offering;
 import org.n52.kafka.sos.model.Value;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +89,8 @@ public class KafkaSosConsumer implements Runnable {
         this.bootstrapServers = bootstrapServers;
         this.kafkaConnectRestBaseUrl = kafkaConnectRestBaseUrl;
         this.kafkaConnectSettings = kafkaConnectSettings;
+        
+        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         
         Properties props = new Properties();
         props.put("bootstrap.servers", this.bootstrapServers);
@@ -158,8 +160,17 @@ public class KafkaSosConsumer implements Runnable {
                                 cache.newFeature(after);
                                 break;
                             case SOS_NAME + "." + NUMERICVALUE_TABLE:
-                                Value val = Value.fromJson(after);
-                                sendEnrichedMeasurement(val);
+                                JsonNode source = payload.path("source");
+                                if (!source.isMissingNode()) {
+                                    JsonNode snapshot = source.path("snapshot");
+                                    if (snapshot.asBoolean()) {
+                                        LOG.debug("got a snapshot value, ignoring");
+                                    }
+                                    else {
+                                        Value val = Value.fromJson(after);
+                                        sendEnrichedMeasurement(val);
+                                    }
+                                }
                                 break;
                             default:
                                 break;
@@ -199,7 +210,8 @@ public class KafkaSosConsumer implements Runnable {
         config.put("database.dbname", this.kafkaConnectSettings.getProperty("database.dbname", "postgres"));
         config.put("database.server.name", SOS_NAME);
         config.put("snapshot.mode", this.kafkaConnectSettings.getProperty("snapshot.mode", "never"));
-        config.put("schema.shitelist", SOS_DB_SCHEMA);
+        config.put("schema.whitelist", SOS_DB_SCHEMA);
+        config.put("table.blacklist", "public.geography_columns,public.geometry_columns,public.raster_columns,public.raster_overviews");
 
         map.put("config", config);
 
@@ -220,8 +232,9 @@ public class KafkaSosConsumer implements Runnable {
             while (!success && retries++ < 3) {
                 try {
                     MeasurementObservation mo = MeasurementObservation.fromValue(val, cache);
+                    Offering targetOffering = cache.resolveOffering(mo);
                     String jsonMo = new ObjectMapper().writeValueAsString(mo);
-                    LOG.info("new value -> enriched measurement: " + jsonMo);
+                    LOG.info("new measurement for offering '{}': {}", targetOffering, jsonMo);
                     success = true;
                 } catch (ObservationNotAvailableException | JsonProcessingException ex) {
                     LOG.debug("Could not send enriched observation: " + ex.getMessage());

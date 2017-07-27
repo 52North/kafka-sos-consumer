@@ -16,6 +16,7 @@
  */
 package org.n52.kafka.sos.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.n52.kafka.sos.ObservationNotAvailableException;
 import java.util.Date;
 import org.n52.kafka.sos.MetadataCache;
@@ -34,8 +35,9 @@ public class MeasurementObservation {
     private final Date resultTime;
     private final String unit;
     private final double value;
+    @JsonIgnore private final Series series;
 
-    public MeasurementObservation(String procedure, String feature, String observableProperty, Date phenomenonTimeStart, Date phenomenonTimeEnd, Date resultTime, String unit, double value) {
+    public MeasurementObservation(String procedure, String feature, String observableProperty, Date phenomenonTimeStart, Date phenomenonTimeEnd, Date resultTime, String unit, double value, Series series) {
         this.procedure = procedure;
         this.feature = feature;
         this.observableProperty = observableProperty;
@@ -44,7 +46,9 @@ public class MeasurementObservation {
         this.resultTime = resultTime;
         this.unit = unit;
         this.value = value;
+        this.series = series;
     }
+
 
     public String getProcedure() {
         return procedure;
@@ -78,6 +82,11 @@ public class MeasurementObservation {
         return resultTime;
     }
 
+    @JsonIgnore
+    public Series getSeries() {
+        return series;
+    }
+    
     public static MeasurementObservation fromValue(Value value, MetadataCache cache) throws ObservationNotAvailableException {
         Observation obs = cache.getObservations().get(value.getObservationId());
 
@@ -108,7 +117,8 @@ public class MeasurementObservation {
                 obs.getPhenomenonTimeEnd(),
                 obs.getResultTime(),
                 series.getUnit() != null ? series.getUnit().getUnit() : null,
-                value.getValue());
+                value.getValue(),
+                series);
     }
 
 }

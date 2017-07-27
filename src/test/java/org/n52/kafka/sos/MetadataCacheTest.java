@@ -16,6 +16,7 @@
  */
 package org.n52.kafka.sos;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class MetadataCacheTest {
 
         MeasurementObservation mo = MeasurementObservation.fromValue(value, cache);
 
-        String jsonMo = new ObjectMapper().writeValueAsString(mo);
+        String jsonMo = new ObjectMapper().setSerializationInclusion(Include.NON_NULL).writeValueAsString(mo);
         LOG.info(jsonMo);
     }
 
