@@ -58,16 +58,18 @@ public class MetadataCache {
         this.series.put(series.getId(), series);
     }
 
-    void newProcedure(JsonNode json) {
+    public Procedure newProcedure(JsonNode json) {
         Procedure proc = Procedure.fromJson(json);
         LOG.info("newProcedure " + proc);
         this.procedures.put(proc.getId(), proc);
+        return proc;
     }
 
-    void newOffering(JsonNode json) {
+    public Offering newOffering(JsonNode json) {
         Offering off = Offering.fromJson(json);
         LOG.info("newOffering " + off);
         this.offerings.put(off.getId(), off);
+        return off;
     }
 
     void newObservableProperty(JsonNode json) {

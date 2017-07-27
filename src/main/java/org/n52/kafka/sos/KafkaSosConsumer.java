@@ -29,8 +29,12 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
+import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -72,6 +76,8 @@ public class KafkaSosConsumer implements Runnable {
     private final String bootstrapServers;
     private final String kafkaConnectRestBaseUrl;
     private final Properties kafkaConnectSettings;
+    
+    private final Map<Integer, SosOfferingProducer> producers = new HashMap<>();
 
 
     public KafkaSosConsumer(int id, String groupId, String bootstrapServers, String kafkaConnectRestBaseUrl,
@@ -111,7 +117,7 @@ public class KafkaSosConsumer implements Runnable {
             Thread.sleep(5000);
             initializeDebeziumConnector();
         } catch (IOException ex) {
-            LOG.warn("Could not initialize debezium connector: " + ex.getMessage());
+            LOG.error("Could not initialize debezium connector: " + ex.getMessage());
             LOG.debug(ex.getMessage(), ex);
             return;
         } catch (InterruptedException ex) {
@@ -148,7 +154,7 @@ public class KafkaSosConsumer implements Runnable {
                                 cache.newProcedure(after);
                                 break;
                             case SOS_NAME + "." + OFFERING_TABLE:
-                                cache.newOffering(after);
+                                initializeProducer(cache.newOffering(after));
                                 break;
                             case SOS_NAME + "." + OBSERVABLEPROPERTY_TABLE:
                                 cache.newObservableProperty(after);
@@ -163,7 +169,7 @@ public class KafkaSosConsumer implements Runnable {
                                 JsonNode source = payload.path("source");
                                 if (!source.isMissingNode()) {
                                     JsonNode snapshot = source.path("snapshot");
-                                    if (snapshot.asBoolean()) {
+                                    if (!snapshot.asBoolean()) {
                                         LOG.debug("got a snapshot value, ignoring");
                                     }
                                     else {
@@ -216,13 +222,39 @@ public class KafkaSosConsumer implements Runnable {
         map.put("config", config);
 
         String jsonNode = mapper.valueToTree(map).toString();
-        String responseString = Request.Post(this.kafkaConnectRestBaseUrl + "connectors/")
+        HttpResponse response = Request.Post(this.kafkaConnectRestBaseUrl + "connectors/")
                 .bodyString(jsonNode, ContentType.APPLICATION_JSON)
                 .execute()
-                .returnContent()
-                .asString();
-
-        LOG.info("Response from kafka connect: " + responseString);
+                .returnResponse();
+        
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_CONFLICT) {
+            //connector was there before, delete it and then retry
+            LOG.info("Connector is already installed, deleting first.");
+            StatusLine deleteResponse = Request.Delete(this.kafkaConnectRestBaseUrl + "connectors/" + map.get("name"))
+                    .execute()
+                    .returnResponse()
+                    .getStatusLine();
+            if (deleteResponse.getStatusCode() < HttpStatus.SC_MULTIPLE_CHOICES) {
+                String retryResponse = Request.Post(this.kafkaConnectRestBaseUrl + "connectors/")
+                        .bodyString(jsonNode, ContentType.APPLICATION_JSON)
+                        .execute()
+                        .returnContent()
+                        .asString();
+                LOG.info("Response from kafka connect: " + retryResponse);
+            }
+            else {
+                throw new IOException("Could not delete old sos-connector");
+            }
+        }
+        else if (response.getStatusLine().getStatusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+            String responseString = EntityUtils.toString(response.getEntity());
+            throw new IOException(responseString);
+        }
+        else {
+            String responseString = EntityUtils.toString(response.getEntity());
+            LOG.info("Response from kafka connect: " + responseString);
+        }
+        
     }
 
     private void sendEnrichedMeasurement(Value val) {
@@ -233,8 +265,16 @@ public class KafkaSosConsumer implements Runnable {
                 try {
                     MeasurementObservation mo = MeasurementObservation.fromValue(val, cache);
                     Offering targetOffering = cache.resolveOffering(mo);
-                    String jsonMo = new ObjectMapper().writeValueAsString(mo);
-                    LOG.info("new measurement for offering '{}': {}", targetOffering, jsonMo);
+                    
+                    LOG.info("new measurement for offering '{}': {}", targetOffering, mo);
+                    
+                    SosOfferingProducer targetProducer = this.producers.get(targetOffering.getId());
+                    if (targetProducer != null) {
+                        targetProducer.newMeasurement(mo);
+                    }
+                    else {
+                        LOG.info("no producer available for offering: {}", targetOffering.getIdentifier());
+                    }
                     success = true;
                 } catch (ObservationNotAvailableException | JsonProcessingException ex) {
                     LOG.debug("Could not send enriched observation: " + ex.getMessage());
@@ -251,6 +291,24 @@ public class KafkaSosConsumer implements Runnable {
                 LOG.warn("Could not send enriched observation. See related debug/trace-level logs above");
             }
         });
+    }
+    
+    private void initializeProducer(Offering off) {
+        SosOfferingProducer prod = new SosOfferingProducer(off, this.bootstrapServers);
+        try {
+            prod.initialize();
+            this.producers.put(off.getId(), prod);
+        } catch (IOException ex) {
+            LOG.warn("Could not create producer", ex.getMessage());
+            LOG.debug(ex.getMessage(), ex);
+        }
+        
+    }
+    
+    public List<String> getProducerTopics() {
+        return this.producers.values().stream()
+                .map(p -> p.getOfferingIdentifier())
+                .collect(Collectors.toList());
     }
 
     @Override

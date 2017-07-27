@@ -18,6 +18,7 @@ package org.n52.kafka.sos;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.UUID;
 import org.junit.Test;
 
 /**
@@ -30,7 +31,7 @@ public class KafkaSosConsumerTestManual {
     public void consumer() throws InterruptedException, IOException {
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/settings.properties"));
-        KafkaSosConsumer cons = new KafkaSosConsumer(0, "ez-sos-consumer", props.getProperty("bootstrapServers"), props.getProperty("kafkaConnectRestBaseUrl"), props);
+        KafkaSosConsumer cons = new KafkaSosConsumer(0, "sos-"+UUID.randomUUID().toString(), props.getProperty("bootstrapServers"), props.getProperty("kafkaConnectRestBaseUrl"), props);
         new Thread(cons).start();
 
         Thread.sleep(600000);
